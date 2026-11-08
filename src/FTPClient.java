@@ -57,8 +57,10 @@ public class FTPClient {
     // sendCommand()
     public String sendCommand(String command) throws IOException {
         // send command
-        out.println(command);
-        protocolLog("Client: " + command);
+        command = command.replace("\r", "").replace("\n", "");  // block injected commands
+        out.print(command + "\r\n");                            // FTP requires CRLF
+        out.flush();
+        protocolLog("Client: " + (command.startsWith("PASS ") ? "PASS ****" : command));
 
         // read the first line and store it
         String line = in.readLine();
@@ -98,24 +100,29 @@ public class FTPClient {
     // login()
     public boolean login(String user, String pass) throws IOException {
         String userResponse = sendCommand("USER " + user);
+        boolean ok = false;
 
         if (userResponse.startsWith("331")) {
             String passResponse = sendCommand("PASS " + pass);
 
             if (passResponse.startsWith("230")) {
                 protocolLog("Login Successful");
-                return true;
+                ok = true;
             } else {
                 protocolLog("Login failed: " + passResponse);
-                return false;
             }
         } else if (userResponse.startsWith("230")) {
             protocolLog("Anonymous login accepted");
-            return true;
+            ok = true;
         } else {
             protocolLog("Login error: " + userResponse);
-            return false;
         }
+
+        if (ok) {
+            sendCommand("TYPE I");
+        }
+
+        return ok;
     }
 
     // PASV
