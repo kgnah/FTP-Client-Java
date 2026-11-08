@@ -94,6 +94,3 @@ Server-side view of a local write-operations session:
 
 Java · Socket programming · FTP (RFC 959) · Swing · Multithreading
 
-## License
-
-MIT, see [LICENSE](LICENSE).
